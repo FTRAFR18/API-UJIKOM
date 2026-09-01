@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CheckRole
 {
-    public function handle(Request $request, Closure $next, ...$role): Response
+    public function handle(Request $request, Closure $next, ...$roles): Response
     {
         // Cek apakah user sudah login dan apakah rolenya ada di dalam parameter yang diizinkan
         if (!auth()->check() || !in_array(auth()->user()->role, $roles)) {

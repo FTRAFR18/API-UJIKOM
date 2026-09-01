@@ -19,6 +19,10 @@ class Alat extends Model
             'stok' => 'integer',
         ];
     }
+    public function scopeTersedia($query)
+    {
+        return $query->where('stok', '>', 0)->where('status_kondisi', 'Baik');
+    }
 
     public function kategori(): BelongsTo {
         return $this->belongsTo(Kategori::class);

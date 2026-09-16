@@ -6,26 +6,39 @@ use App\Models\Peminjaman;
 use App\Models\pengembalian;
 use App\Models\Alat;
 use Illuminate\Http\Request;
+use Illuminate\Queue\RedisQueue;
 use Illuminate\Support\Facades\DB;
 
 class PetugasController extends Controller
 {
     // Menampilkan daftar pengajuan peminjaman dari siswa/peminjam
-    public function indexPeminjaman()
+    public function indexPeminjaman(Request $request)
     {
-        $peminjamans = Peminjaman::with(['user', 'detailPinjams.alat'])->latest()->get();
-        return view('petugas.peminjaman.index', compact('peminjamans'));
+        $search = $request->input('search');
+
+        $peminjamans = Peminjaman::with(['user', 'detailPinjam.alat'])
+            ->where('status', 'diajukan')
+            ->when($search, function ($query, $search) {
+                return $query->whereHas('user', function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%");
+                });
+            })
+            ->latest()
+            ->get();
+
+        return view('petugas.peminjaman.index', compact('peminjamans', 'search'));
     }
 
+    // Menyetujui Peminjaman (Mengubah status & mengurangi stok alat)
     public function setujuiPeminjaman($id)
     {
         DB::beginTransaction();
         try {
-            $peminjaman = Peminjaman::with('detailPinjams')->findOrFail($id);
+            $peminjaman = Peminjaman::with('detailPinjam')->findOrFail($id);
             $peminjaman->update(['status' => 'dipinjam']);
 
             // Kurangi stok alat secara otomatis
-            foreach ($peminjaman->detailPinjams as $detail) {
+            foreach ($peminjaman->detailPinjam as $detail) {
                 $alat = Alat::findOrFail($detail->alat_id);
                 $alat->stok -= $detail->jumlah;
                 $alat->save();
@@ -48,7 +61,7 @@ class PetugasController extends Controller
 
         DB::beginTransaction();
         try {
-            $peminjaman = Peminjaman::with('detailPinjams')->findOrFail($peminjamanId);
+            $peminjaman = Peminjaman::with('detailPinjam')->findOrFail($peminjamanId);
 
             // Simpan data pengembalian
             Pengembalian::create([
@@ -63,7 +76,7 @@ class PetugasController extends Controller
             $peminjaman->update(['status' => 'selesai']);
 
             // Kembaliakan stok alat ke inventaris 
-            foreach ($peminjaman->detailPinjams as $detail) {
+            foreach ($peminjaman->detailPinjam as $detail) {
                 $alat = Alat::findOrFail($detail->alat_id);
                 $alat->stok += $detail->jumlah;
                 $alat->save();

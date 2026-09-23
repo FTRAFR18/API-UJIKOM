@@ -44,6 +44,11 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/peminjaman', [AdminController::class, 'storePeminjaman'])->name('peminjaman.store');
     Route::put('/peminjaman/{id}/status', [AdminController::class, 'updateStatusPeminjaman'])->name('peminjaman.updateStatus');
     Route::delete('/peminjaman/{id}', [AdminController::class, 'destroyPeminjaman'])->name('peminjaman.destroy');
+
+    // CRUD Pengembalian
+    Route::get('/pengembalian', [AdminController::class, 'indexPengembalian'])->name('pengembalian.index');
+    Route::get('/pengembalian/{id}/proses', [AdminController::class, 'createPengembalian'])->name('pengembalian.create');
+    Route::post('/pengembalian/{id}', [AdminController::class, 'prosesPengembalian'])->name('pengembalian.proses');
 });
 
 // Petugas
@@ -51,9 +56,16 @@ Route::middleware(['auth', 'role:petugas,admin'])->prefix('petugas')->name('petu
     // Peminjaman dan Persetujuan
     Route::get('/peminjaman', [PetugasController::class, 'indexPeminjaman'])->name('peminjaman.index');
     Route::post('/peminjaman/{id}/setujui', [PetugasController::class, 'setujuiPeminjaman'])->name('peminjaman.setujui');
+    Route::post('/peminjaman/{id}/tolak', [PetugasController::class, 'tolakPeminjaman'])->name('peminjaman.tolak');
     
     // Pengembalian dan Denda
+    Route::get('/pengembalian', [PetugasController::class, 'indexPengembalian'])->name('pengembalian.index');
+    Route::get('/pengembalian/{id}/proses', [PetugasController::class, 'createPengembalian'])->name('pengembalian.create');
     Route::post('/pengembalian/{id}', [PetugasController::class, 'prosesPengembalian'])->name('pengembalian.proses');
+
+    // Route Laporan Pengembalian
+    Route::get('/laporan-peminjaman', [PetugasController::class, 'indexLaporan'])->name('laporan.index');
+    Route::get('/laporan-peminjaman/pdf', [PetugasController::class, 'cetakPdf'])->name('laporan.pdf');
 });
 
 // Peminjam

@@ -86,7 +86,7 @@
                                         <select name="status" onchange="this.form.submit()" class="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none">
                                             <option value="diajukan" {{ $peminjaman->status == 'diajukan' ? 'selected' : ''}}>Diajukan</option>
                                             <option value="dipinjam" {{ $peminjaman->status == 'dipinjam' ? 'selected' : ''}}>Dipinjam</option>
-                                            <option value="selesai" {{ $peminjaman->status == 'selesai' ? 'selected' : ''}}>Selesai</option>
+                                            <option value="selesai" {{ $peminjaman->status == 'dikembalikan' ? 'selected' : ''}}>dikembalikan</option>
                                             <option value="telat" {{ $peminjaman->status == 'telat' ? 'selected' : ''}}>Telat</option>
                                         </select>
                                     </form>

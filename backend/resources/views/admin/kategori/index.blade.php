@@ -41,9 +41,9 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-gray-100 text-gray-600 text-sm uppercase tracking-wider">
-                        <td class="py-3 px-4 border-b w-16 text-center">No</td>
-                        <td class="py-3 px-4 border-b">Nama Kategori</td>
-                        <td class="py-3 px-4 border-b w-48">Aksi</td>    
+                        <th class="py-3 px-4 border-b w-16 text-center">No</th>
+                        <th class="py-3 px-4 border-b">Nama Kategori</th>
+                        <th class="py-3 px-4 border-b w-48">Aksi</th>    
                     </tr>
                 </thead>
                 <tbody class="text-gray-700 text-sm">

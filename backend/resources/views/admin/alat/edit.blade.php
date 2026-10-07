@@ -47,8 +47,7 @@
         </div>
 
         <div class="mb-6">
-            <label class="block text-gray-700 text-sm font-semibold mb-2">Gambar Alat <span
-                class="text-xs text-gray-400 font-normal">(Biarkan kosong jika tidak ingin mengubah gambar)</span></label>
+            <label class="block text-gray-700 text-sm font-semibold mb-2">Gambar Alat</label>
             @if($alat->gambar)
                 <div class="mb-2">
                     <img src="{{ asset($alat->gambar) }}" alt="Preview" class="w-16 h-16 object-cover rounded-lg border">

@@ -20,8 +20,26 @@ class AdminController extends Controller
     // Menampilkan Dashboard Admin & Log Aktivitas
     public function index()
     {
-        $logs = LogAktivitas::with('user')->latest()->take(10)->get();
-        return view('admin.dashboard', compact('logs'));
+        $totalAlat = Alat::count();
+        $alatBaik = Alat::where('status_kondisi', 'Baik')->count();
+        $totalKategori = Kategori::count();
+        $peminjamanAktif = Peminjaman::where('status', 'dipinjam')->count();
+        $peminjamanDiajukan = Peminjaman::where('status', 'diajukan')->count();
+        $totalUser = User::count();
+
+        $peminjamanTerbaru = Peminjaman::with('user')->latest()->take(5)->get();
+        $logsTerbaru = LogAktivitas::with('user')->latest()->take(5)->get();
+
+        return view('admin.dashboard', compact(
+            'totalAlat',
+            'alatBaik',
+            'totalKategori',
+            'peminjamanAktif',
+            'peminjamanDiajukan',
+            'totalUser',
+            'peminjamanTerbaru',
+            'logsTerbaru'
+        ));
     }
 
     // CRUD Alat: Menampilkan daftar alat
@@ -165,7 +183,19 @@ class AdminController extends Controller
             'email' => 'required|string|max:255|unique:users',
             'password' => 'required|string|min:6',
             'role' => 'required|in:admin,petugas,peminjam',
+            'no_hp' => 'nullable',
+            'foto_profile' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
+
+        $fotoPath = null;
+
+        // Handle Upload Gambar jika ada
+        if ($request->hasFile('foto_profile')) {
+            $file = $request->file('foto_profile');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('storage/user'), $filename);
+            $fotoPath = 'storage/user/' . $filename;
+        }
 
         User::create([
             'name' => $request->name,
@@ -173,6 +203,7 @@ class AdminController extends Controller
             'password' => Hash::make($request->password),
             'role' => $request->role,
             'no_hp' => $request->no_hp,
+            'foto_profile' => $fotoPath,
         ]);
 
         return redirect()->route('admin.user.index')->with('success', 'User berhasil ditambahkan.');
@@ -202,6 +233,18 @@ class AdminController extends Controller
             'no_hp' => $request->no_hp,
         ];
 
+        if ($request->hasFile('foto_profile')) {
+            // Hapus foto profile lama jika ada
+            if ($user->foto_profile && file_exists(public_path($user->foto_profile))) {
+                unlink(public_path($user->foto_profile));
+            }
+
+            $file = $request->file('foto_profile');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('storage/user'), $filename);
+            $data['foto_profile'] = 'storage/user/' . $filename;
+        }
+
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
         }
@@ -216,6 +259,12 @@ class AdminController extends Controller
     {
         $user = User::findOrFail($id);
         $user->delete();
+
+        // Hapus file gambar fisik jika ada
+        if ($user->foto_profile && file_exists(public_path($user->foto_profile))) {
+            unlink(public_path($user->foto_profile));
+        }
+
 
         return redirect()->route('admin.user.index')->with('success', 'User berhasil dihapus');
     }
@@ -375,7 +424,7 @@ class AdminController extends Controller
         $peminjaman = Peminjaman::with('detailPinjam.alat')->findOrFail($id);
 
         $request->validate([
-            'status' => 'required|in:diajukan,dipinjam,selesai,telat',
+            'status' => 'required|in:diajukan,dipinjam,dikembalikan,telat',
         ]);
 
         DB::beginTransaction();
@@ -393,7 +442,7 @@ class AdminController extends Controller
                     }
                     $alat->decrement('stok' ,$detail->jumlah);
                 }
-            } elseif ($statusLama == 'dipinjam' && ($statusBaru == 'selesai')) {
+            } elseif ($statusLama == 'dipinjam' && ($statusBaru == 'dikembalikan')) {
                 // Kembalikan stok karena barang sudah dikembalikan (selesai)
                 foreach ($peminjaman->detailPinjam as $detail) {
                     $detail->alat->increment('stok', $detail->jumlah);
@@ -497,10 +546,51 @@ class AdminController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('petugas.pengembalian.index')->with('success', 'Pengembalian berhasil dicatat dan stok dipulihkan.');
+            return redirect()->route('petugas.pengembalian.index')->with('success', 'Pengembalian berhasil dicatat.');
         } catch (\Exception $e) {
             DB::rollback();
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
+    }
+
+     public function LogAktivitas()
+    {
+        $logs = LogAktivitas::with('user')->latest()->take(10)->get();
+        return view('admin.logAktivitas.index', compact('logs'));
+    }
+
+    public function indexLaporan(Request $request)
+    {
+        $query = Peminjaman::with(['user', 'detailPinjam.alat', 'pengembalian'])
+            ->where('status', 'dikembalikan');
+
+        // Filter berdasarkan tanggal pinjam
+        if ($request->filled('tgl_mulai') && $request->filled('tgl_selesai')) {
+            $query->whereBetween('tgl_pinjam', [$request->tgl_mulai, $request->tgl_selesai]);
+        }
+
+        $riwayat = $query->latest()->get();
+
+        return view('admin.laporan.index', compact('riwayat'));
+    }
+
+    public function cetakPdf(Request $request)
+    {
+        $query = Peminjaman::with(['user', 'detailPinjam.alat', 'pengembalian'])
+            ->where('status', 'dikembalikan');
+
+        if ($request->filled('tgl_mulai') && $request->filled('tgl_selesai')) {
+            $query->whereBetween('tgl_pinjam', [$request->tgl_mulai, $request->tgl_selesai]);
+        }
+
+        $riwayat = $query->latest()->get();
+        $tglMulai = $request->tgl_mulai;
+        $tglSelesai = $request->tgl_selesai;
+
+        // Generate PDF
+        $pdf = Pdf::loadView('admin.laporan.pdf', compact('riwayat', 'tglMulai', 'tglSelesai'))
+                 ->setPaper('a4', 'landscape');
+
+        return $pdf->download('Laporan-Peminjaman-Alat.pdf');
     }
 }

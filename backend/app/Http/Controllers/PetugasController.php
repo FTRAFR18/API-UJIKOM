@@ -142,7 +142,7 @@ class PetugasController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('petugas.pengembalian.index')->with('success', 'Pengembalian berhasil dicatat dan stok dipulihkan.');
+            return redirect()->route('petugas.pengembalian.index')->with('success', 'Pengembalian berhasil dicatat.');
         } catch (\Exception $e) {
             DB::rollback();
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());

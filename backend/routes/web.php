@@ -49,6 +49,13 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/pengembalian', [AdminController::class, 'indexPengembalian'])->name('pengembalian.index');
     Route::get('/pengembalian/{id}/proses', [AdminController::class, 'createPengembalian'])->name('pengembalian.create');
     Route::post('/pengembalian/{id}', [AdminController::class, 'prosesPengembalian'])->name('pengembalian.proses');
+
+    // Log Aktivitas
+    Route::get('/LogAktivitas', [AdminController::class, 'LogAktivitas'])->name('logAktivitas.index');
+
+    // Cetak Laporan
+    Route::get('/laporan-peminjaman', [AdminController::class, 'indexLaporan'])->name('laporan.index');
+    Route::get('/laporan-peminjaman/pdf', [AdminController::class, 'cetakPdf'])->name('laporan.pdf');
 });
 
 // Petugas

@@ -61,15 +61,15 @@
                             
                             <!-- Status Label (Badge) -->
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @if(in_array(strtolower($peminjaman->status), ['diajukan', 'pending', 'menunggu']))
+                                @if(in_array(strtolower($peminjaman->status), ['diajukan']))
                                     <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 border border-yellow-200">
-                                        Menunggu Persetujuan
+                                        Sedang Diajukan
                                     </span>
-                                @elseif(in_array(strtolower($peminjaman->status), ['disetujui', 'dipinjam']))
+                                @elseif(in_array(strtolower($peminjaman->status), ['dipinjam']))
                                     <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 border border-blue-200">
                                         Sedang Dipinjam
                                     </span>
-                                @elseif(in_array(strtolower($peminjaman->status), ['dikembalikan', 'selesai']))
+                                @elseif(in_array(strtolower($peminjaman->status), ['dikembalikan']))
                                     <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 border border-green-200">
                                         Sudah Dikembalikan
                                     </span>

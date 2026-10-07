@@ -72,7 +72,7 @@
                                 <span class="px-2.5 py-1 text-xs font-semibold rounded-full
                                     @if($peminjaman->status == 'diajukan') bg-yellow-100 text-yellow-800
                                     @elseif($peminjaman->status == 'dipinjam') bg-blue-100 text-blue-800
-                                    @elseif($peminjaman->status == 'selesai') bg-emerald-100 text-emerald-800
+                                    @elseif($peminjaman->status == 'dikembalikan') bg-emerald-100 text-emerald-800
                                     @else bg-red-100 text-red-800 @endif">
                                     {{ ucfirst($peminjaman->status) }}
                                 </span>
@@ -86,7 +86,7 @@
                                         <select name="status" onchange="this.form.submit()" class="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none">
                                             <option value="diajukan" {{ $peminjaman->status == 'diajukan' ? 'selected' : ''}}>Diajukan</option>
                                             <option value="dipinjam" {{ $peminjaman->status == 'dipinjam' ? 'selected' : ''}}>Dipinjam</option>
-                                            <option value="selesai" {{ $peminjaman->status == 'dikembalikan' ? 'selected' : ''}}>dikembalikan</option>
+                                            <option value="dikembalikan" {{ $peminjaman->status == 'dikembalikan' ? 'selected' : ''}}>Dikembalikan</option>
                                             <option value="telat" {{ $peminjaman->status == 'telat' ? 'selected' : ''}}>Telat</option>
                                         </select>
                                     </form>
